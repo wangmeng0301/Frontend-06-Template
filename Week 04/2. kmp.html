@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    function kmp(source, pattern) {
+      // 生成table
+      let table = new Array(pattern.length).fill(0);
+      // abcdabce
+      // aabaaac
+      // 每轮开始的时候
+      // i = 1; j = 0; [0, 0, 0, 0, 0, 0, 0]
+      // i = 2; j = 1; [0, 0, 1, 0, 0, 0, 0]
+      // i = 2; j = 0; [0, 0, 1, 0, 0, 0, 0]
+      // i = 3; j = 0; [0, 0, 1, 0, 0, 0, 0]
+      // i = 4; j = 1; [0, 0, 1, 0, 1, 0, 0]
+      // i = 5; j = 2; [0, 0, 1, 0, 1, 2, 0]
+      // i = 5; j = 1; [0, 0, 1, 0, 1, 2, 0]
+      // i = 6; j = 2; [0, 0, 1, 0, 1, 2, 2]
+      {
+        let i = 1; j = 0;
+        while(i < pattern.length) {
+          if (pattern[i] === pattern[j]) { 
+            ++i, ++j;
+            table[i] = j;
+          } else {
+            if (j > 0) {
+              j = table[j];
+            } else {
+              ++i;
+            }
+          }
+        }
+      }
+
+      {
+        let i = 0; j = 0;
+        while(i < source.length) {
+          debugger;
+          if (source[i] === pattern[j]) { 
+            ++i, ++j;
+          } else {
+            if (j > 0) {
+              j = table[j];
+            } else {
+              ++i;
+            }
+          }
+          if (j === pattern.length)
+            return true
+        }
+        return false;
+      }
+    }
+
+    console.log(kmp('aabaaaacaabaaac', 'aabaaac'));
+  </script> 
+</body>
+</html>
