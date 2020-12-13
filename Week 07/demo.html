@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="container" style="width: 100vh; height: 100vh"></div>
+  <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.7.1/dist/g6.min.js"></script>
+  <script>
+    function getRealm() {
+      let map = new Map();
+      let set = new Set();
+      let objectNames = [
+        // 值属性
+        'globalThis',
+        'Infinity',
+        'NaN',
+        'undefined',
+        // 函数属性
+        'eval',
+        'isFinite',
+        'isNan',
+        'parseFloat',
+        'parseInt',
+        'decodeURI',
+        'decodeURIComponent',
+        'encodeURI',
+        'encodeURIComponent',
+        // 基本对象
+        'Array',
+        'Date',
+        'RegExp',
+        'Promise',
+        'Proxy',
+        'Map',
+        'weakMap',
+        'Set',
+        'weakSet',
+        'Function',
+        'Boolean',
+        'String',
+        'Number',
+        'Symbol',
+        'Object',
+        // 错误对象
+        'Error',
+        'EvalError',
+        'RangeError',
+        'ReferenceError',
+        'syntaxError',
+        'TypeError',
+        'URIError',
+        // 可索引的集合对象
+        'ArrayBuffer',
+        'SharedArrayBuffer',
+        'DateView',
+        'Float32Arrary',
+        'Float64Arrary',
+        'Int8Arrary',
+        'Int16Arrary',
+        'Int32Arrary',
+        'Unit8Arrary',
+        'Unit16Arrary',
+        'Unit32Arrary',
+        'Unit8ClampedArrary',
+        'Atomics',
+        'JSON',
+        'Math',
+        'Reflect',
+      ]
+
+      let realm = {
+        id: 'realm',
+        children: [],
+      }
+
+      objectNames.forEach(name => {
+        if (window[name]) {
+          map.set(name, window[name]);
+          realm.children.push({
+            id: name,
+            children: [],
+          })
+        }
+      });
+
+      let realmChildrenQueue = [...realm.children];
+
+
+      while(realmChildrenQueue.length) {
+        let child = realmChildrenQueue.shift();
+        let id = child.id;
+        let object = map.get(id);
+
+        if (set.has(object)) {
+          continue
+        }
+        set.add(object);
+        
+        for (const prop of Object.getOwnPropertyNames(object)) {
+          let desc = Object.getOwnPropertyDescriptor(object, prop);
+          
+          const pushChild = (type = 'value') => {
+            let name = type === 'value' ? `${id}.${prop}` : `${id}.${prop}.[${type}]`;
+
+            let o = {
+              id: name,
+              children: []
+            }
+
+            map.set(name, desc[type]);
+
+            child.children.push(o);
+            
+            realmChildrenQueue.push(o);
+
+          }
+          if (desc.value !== null && typeof desc.value === 'object' || typeof desc.value === 'function') {
+            pushChild();
+          }
+
+          if (desc.get) {
+            pushChild('get');
+          }
+          
+          if (desc.set) {
+            pushChild('set');
+          }
+        }
+      }
+      return realm;
+    }
+
+    function render(data) {
+      const width = document.getElementById('container').scrollWidth;
+      const height = document.getElementById('container').scrollHeight || 500;
+      const treeGraph = new G6.TreeGraph({
+        container: 'container',
+        width,
+        height,
+        modes: {
+          default: [
+            {
+              type: 'collapse-expand',
+              onChange(item, collapsed) {
+                const icon = item.get('group').findByClassName('collapse-icon');
+                if (collapsed) {
+                  icon.attr('symbol', EXPAND_ICON);
+                } else {
+                  icon.attr('symbol', COLLAPSE_ICON);
+                }
+              },
+            },
+            'drag-canvas',
+            'zoom-canvas',
+          ],
+        },
+        defaultNode: {
+          size: 26,
+          anchorPoints: [
+            [0, 0.5],
+            [1, 0.5],
+          ],
+          style: {
+            fill: '#c6e5ff',
+            stroke: '#5b8ff9'
+          }
+        },
+        defaultEdge: {
+          type: 'cubic-horizontal',
+          style: {
+            stroke: '#a3b1bf  '
+          }
+        },
+        layout: {
+          type: 'mindmap',
+          direction: 'TB', // H / V / LR / RL / TB / BT
+          getHeight: () => {
+            return 16
+          },
+          getWidth: () => {
+            return 100
+          },
+          getVGap: () => {
+            return 10;
+          },
+          getHGap: () => {
+            return 100;
+          },
+          getSide: () => {
+            return 'right';
+          }
+        },
+      });
+
+      let centerX = '';
+      treeGraph.node(function (node) {
+        if (node.id === 'Modeling Methods') {
+          centerX = node.x;
+        }
+
+        return {
+          label: node.id,
+          labelCfg: {
+            position: 
+              node.children && node.children.length > 0 
+               ? 'right'
+               : node.x > centerX
+               ? 'right'
+               :'left',
+            offset: 5,
+          }
+        }
+      })
+      treeGraph.data(data); // 加载远程数据
+      treeGraph.render(); // 渲染
+      treeGraph.fitView();
+    }
+
+    render(getRealm());
+  </script>
+</body>
+</html>
