@@ -71,10 +71,12 @@ function specificity(selector) {
   var p = [0, 0, 0, 0];
   var selectorParts = selector.split(" ");
   for (const part of selectorParts) {
-      if (part.charAt(0) == "#") {
-          p[1] += 1
-      } else if (part.charAt(0) == ".") {
-          p[2] += 1
+      const ids = part.match(/\w+/g);
+      const classS = part.match(/\.\w+/g);
+      if (ids.length) {
+          p[1] += ids.length;
+      } else if (classS.length) {
+          p[2] += classS.length;
       } else {
           p[3] += 1
       }
@@ -94,22 +96,27 @@ function comparer(sp1, sp2) {
 }
 
 function match(element, selector) {
-  if (!selector || !element.attributes) {
+  if (!selector || !element || !element.attributes) {
     return false;
   }
 
-  if (selector.charAt(0) == "#") {
+  let idReg = /^\#\w|\#\w[\n\t\f ]\.\w|\#\w[\n\t\f ]\w$/;
+  let classReg = /^\.\w|\#w[\n\t\f ]\.w|\#\w[\n\t\f ]\w$/;
+  let tagReg = /^\w|\w[\n\t\f ]\#\w|$\w[\n\t\f ]\.\w$/;
+  if (selector.match(idReg)) {
     var attr = element.attributes.filter(attr => attr.name === "id")[0];
     if (attr && attr.value === selector.replace("#", '')) {
       return true;
     }
-  } else if (selector.charAt(0) == ".") {
+  } else if (selector.match(classReg)) {
     var attr = element.attributes.filter(attr => attr.name === "class")[0];
     if (attr && attr.value === selector.replace(".", '')) {
       return true;
     }
   } else {
     if (element.tagName === selector) {
+      return true;
+    } else if (selector.match(tagReg)) {
       return true;
     }
   }
