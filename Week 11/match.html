@@ -13,8 +13,6 @@
 </head>
 
 <body>
-  为什么 first-letter 可以设置 float 之类的，而 first-line 不行呢？
-  因为 float 会让元素脱离文档流，然后文档流内的内容会选出新的第一行，这个新的第一行又会被 ::first-line 选中，然后 float 使其脱离文档流。最后会一直循环下去，知道文档流没有文字。
   <div>
     <div class="class" id="id">123</div>
   </div>
