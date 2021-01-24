@@ -1,7 +1,7 @@
 # 学习笔记
 
 
-## Rang pi 
+## Rang Api 
   可以用 Document 对象的 Document.createRange 方法创建 Range，也可以用 Selection 对象的 getRangeAt 方法获取 Range。另外，还可以通过 Document 对象的构造函数 Range() 来得到 Range。
 
 ### 定位方法
