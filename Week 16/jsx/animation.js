@@ -81,12 +81,12 @@ export class TimeLine {
   // 重启。针对时间线做清理和复用
   reset() {
     this.pause();
-    this.state = 'inited';
+    this.state = 'Inited';
     let startTime = Date.now();
     this[PAUSE_TIME] = 0;
+    this[PAUSE_START] = 0;
     this[ANIMATIONS] = new Set();
     this[START_TIME] = new Map();
-    this[PAUSE_START] = 0;
     this[TICK_HANDLER] = null;
   }
 
